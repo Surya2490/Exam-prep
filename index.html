@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Competitive Exam Prep</title>
+<style>
+body { font-family: Arial, sans-serif; margin:0; padding:0; background:#f9f9f9; }
+header { background: linear-gradient(90deg,#0077b6,#00b4d8); color:white; padding:2rem; text-align:center; }
+header h1{margin:0;font-size:2rem;}
+header p{margin:0.5rem 0 1rem;}
+.btn{background:white;color:#0077b6;padding:0.6rem 1.2rem;margin:0.5rem;border:none;border-radius:8px;cursor:pointer;font-weight:bold;}
+.container{padding:2rem;}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1rem;}
+.card{background:white;padding:1rem;border-radius:12px;box-shadow:0 2px 6px rgba(0,0,0,0.1);text-align:center;cursor:pointer;transition: transform 0.2s;}
+.card:hover{transform:scale(1.05);}
+#subjectSection,#mockSection,#testSection,#resultSection{display:none;}
+.question{margin-bottom:1.5rem;}
+footer{margin-top:2rem;text-align:center;padding:1rem;background:#0077b6;color:white;}
+.explanation{background:#eef;padding:0.5rem;margin:0.5rem 0;border-left:4px solid #0077b6;}
+</style>
+</head>
+<body>
+<header>
+<h1>Mocks to Ace Your Exams</h1>
+<p>Free mocks for CUET UG, CA Foundation, IPMAT, IPU-CET, Class 12 Boards, and more.</p>
+</header>
+<div class="container" id="examSection">
+<h2>Select Exam</h2>
+<div class="grid" id="examGrid"></div>
+</div>
+<div class="container" id="subjectSection">
+<h2>Select Subject</h2>
+<div class="grid" id="subjectGrid"></div>
+<button class="btn" onclick="backToExams()">Back to Exams</button>
+</div>
+<div class="container" id="mockSection">
+<h2>Select Mock / PYQ</h2>
+<div class="grid" id="mockGrid"></div>
+<button class="btn" onclick="backToSubjects()">Back to Subjects</button>
+</div>
+<div class="container" id="testSection">
+<h2 id="testTitle">Mock Test</h2>
+<p id="timer">Time Left: 60:00</p>
+<form id="quizForm"></form>
+<button class="btn" onclick="submitTest()">Submit</button>
+</div>
+<div class="container" id="resultSection">
+<h2>Your Result</h2>
+<div id="score"></div>
+<div id="explanations"></div>
+<button class="btn" onclick="restart()">Back to Home</button>
+</div>
+<footer>© 2025 Exam Prep | Built for students</footer>
+<script>
+const exams = {"CUET UG":["Aptitude","English","General Awareness"],"CA Foundation":["Quantitative Aptitude","Accounting","Economics"],"IPMAT":["Quantitative","Verbal","Logical Reasoning"],"IPU-CET":["Maths","English","GK"],"Class 12 Boards":["Physics","Chemistry","Maths"]};
+const mocksPerSubject=10;
+let selectedExam='',selectedSubject='',selectedMock='';
+let questions=[];
+let timeLeft=3600,timer;
+function renderExams(){const grid=document.getElementById('examGrid');grid.innerHTML='';for(const exam in exams){const div=document.createElement('div');div.className='card';div.innerText=exam;div.onclick=()=>{selectedExam=exam;renderSubjects();};grid.appendChild(div);}}
+function renderSubjects(){document.getElementById('examSection').style.display='none';document.getElementById('subjectSection').style.display='block';const grid=document.getElementById('subjectGrid');grid.innerHTML='';exams[selectedExam].forEach(sub=>{const div=document.createElement('div');div.className='card';div.innerText=sub;div.onclick=()=>{selectedSubject=sub;renderMocks();};grid.appendChild(div);});}
+function renderMocks(){document.getElementById('subjectSection').style.display='none';document.getElementById('mockSection').style.display='block';const grid=document.getElementById('mockGrid');grid.innerHTML='';for(let i=1;i<=mocksPerSubject;i++){const divM=document.createElement('div');divM.className='card';divM.innerText='Mock '+i;divM.onclick=()=>{selectedMock='Mock '+i;startTest();};grid.appendChild(divM);const divP=document.createElement('div');divP.className='card';divP.innerText='PYQ '+i;divP.onclick=()=>{selectedMock='PYQ '+i;startTest();};grid.appendChild(divP);}}
+function startTest(){document.getElementById('mockSection').style.display='none';document.getElementById('testSection').style.display='block';document.getElementById('testTitle').innerText=`${selectedExam} - ${selectedSubject} - ${selectedMock}`;generateQuestions();renderQuestions();timeLeft=3600;updateTimer();clearInterval(timer);timer=setInterval(countdown,1000);}
+function generateQuestions(){questions=[];for(let i=1;i<=10;i++){questions.push({question:`Question ${i}`,options:[`Option 1`,`Option 2`,`Option 3`,`Option 4`],answer:0,explanation:`Explanation ${i}`});}}
+function renderQuestions(){const form=document.getElementById('quizForm');form.innerHTML='';questions.forEach((q,idx)=>{let div=document.createElement('div');div.className='question';div.innerHTML=`<p>${idx+1}. ${q.question}</p>`;q.options.forEach((opt,i)=>{div.innerHTML+=`<label><input type='radio' name='q${idx}' value='${i}'> ${opt}</label>`;});form.appendChild(div);});}
+function updateTimer(){let min=Math.floor(timeLeft/60),sec=timeLeft%60;document.getElementById('timer').innerText=`Time Left: ${min}:${sec<10?'0':''}${sec}`;}
+function countdown(){if(timeLeft<=0){clearInterval(timer);submitTest();}else{timeLeft--;updateTimer();}}
+function submitTest(){clearInterval(timer);let score=0;let expHTML='';const form=document.getElementById('quizForm');questions.forEach((q,idx)=>{const selected=form[`q${idx}`].value;if(parseInt(selected)===q.answer)score++;expHTML+=`<div class='explanation'><strong>Q${idx+1} Answer:</strong> ${q.options[q.answer]}<br><em>${q.explanation}</em></div>`;});document.getElementById('testSection').style.display='none';document.getElementById('resultSection').style.display='block';document.getElementById('score').innerText=`You scored ${score} out of ${questions.length}`;document.getElementById('explanations').innerHTML=expHTML;}
+function restart(){document.getElementById('resultSection').style.display='none';document.getElementById('examSection').style.display='block';}
+function backToExams(){document.getElementById('subjectSection').style.display='none';document.getElementById('examSection').style.display='block';}
+function backToSubjects(){document.getElementById('mockSection').style.display='none';document.getElementById('subjectSection').style.display='block';}
+renderExams();
+</script>
+</body>
+</html>
