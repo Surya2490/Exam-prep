@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Progress</title>
+    <style>
+        body { font-family: Arial, sans-serif; background: #f0f0f0; text-align: center; }
+        .container { max-width: 600px; margin: 50px auto; background: white; padding: 20px; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.1);}
+        table { width: 100%; border-collapse: collapse; margin-top: 20px;}
+        th, td { border: 1px solid #ddd; padding: 8px; }
+        th { background-color: #4CAF50; color: white; }
+        button { padding: 10px 20px; margin-top: 20px; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Your Test Progress</h2>
+        <table id="progressTable">
+            <tr>
+                <th>Test Name</th>
+                <th>Score</th>
+                <th>Status</th>
+            </tr>
+        </table>
+        <button id="addTest">Add Random Test Result</button><br>
+        <button onclick="logout()">Logout</button>
+    </div>
+
+    <script>
+        const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+        if(!currentUser) {
+            alert('Please login first!');
+            window.location.href = 'login.html';
+        }
+
+        const table = document.getElementById('progressTable');
+
+        function renderProgress() {
+            table.querySelectorAll('tr:not(:first-child)').forEach(row => row.remove());
+
+            currentUser.progress.forEach(test => {
+                const row = table.insertRow();
+                row.insertCell(0).textContent = test.name;
+                row.insertCell(1).textContent = test.score;
+                row.insertCell(2).textContent = test.status;
+            });
+        }
+
+        renderProgress();
+
+        document.getElementById('addTest').addEventListener('click', () => {
+            const testNames = ['Test 1','Test 2','Test 3','Test 4'];
+            const statusOptions = ['Completed','Pending','Not Attempted'];
+            const newTest = {
+                name: testNames[Math.floor(Math.random()*testNames.length)],
+                score: Math.floor(Math.random()*101) + '%',
+                status: statusOptions[Math.floor(Math.random()*statusOptions.length)]
+            };
+            currentUser.progress.push(newTest);
+
+            const users = JSON.parse(localStorage.getItem('users'));
+            const index = users.findIndex(u => u.username === currentUser.username);
+            users[index] = currentUser;
+            localStorage.setItem('users', JSON.stringify(users));
+            localStorage.setItem('currentUser', JSON.stringify(currentUser));
+
+            renderProgress();
+        });
+
+        function logout() {
+            localStorage.removeItem('currentUser');
+            window.location.href = 'login.html';
+        }
+    </script>
+</body>
+</html>
